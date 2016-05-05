@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html ng-app="app">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+   <title>groupbox test</title>
+   <script src="../bower_components/angular/angular.js"></script>
+   <script src="../groupbox.js"></script>
+</head>
+
+<body ng-controller="groupboxTest">
+
+<div vscroll style="height:300px; width: 100%; overflow-y: auto;">
+   <ul style="list-style: none;margin:0;padding:0;">
+      <li ng-repeat="item in data" style="background-color: #{{item.code}}">
+         <label>
+            <input type="checkbox" ng-model="isSelected" />
+            #{{item.code}}
+         </label>
+      </li>
+   </ul>
+</div>
+
+<script language="javascript">
+   var app = angular.module('app', ['groupbox']);
+   app.controller('groupboxTest', ['$scope', function ($scope) {
+      $scope.data = [];
+
+      for (var i = 0; i < 10; i++) {
+         var code = Math.floor(Math.random() * 16777215);
+         $scope.data[i] = {
+            isSelected: false,
+            code: code.toString(16),
+         };
+      }
+   }]);
+</script>
+</body>
+
+</html>
