@@ -1,0 +1,29 @@
+{
+  "name": "groupbox",
+  "main": "groupbox.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/klumba12/groupbox",
+  "authors": [
+    "Dmitry <dimitry.sitnov@gmail.com>"
+  ],
+  "description": "group box",
+  "keywords": [
+    "group",
+    "box",
+    "angularjs",
+    "angular"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "angular": "*"
+  },
+  "devDependencies": {
+    "angular-mocks": "*"
+  }
+}
