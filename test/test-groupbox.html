@@ -11,13 +11,28 @@
 
 <body ng-controller="groupboxTest">
 
-<div vscroll style="height:300px; width: 100%; overflow-y: auto;">
-   <ul style="list-style: none;margin:0;padding:0;">
+<h4>Data</h4>
+<div style="height:300px; width: 100%; overflow-y: auto;">
+   <ul groupbox="data" groupbox-selection="selection" style="list-style: none;margin:0;padding:0;">
+      <li style="margin-bottom: 5px;">
+         <label>
+            <input groupbox-select-all="change" type="checkbox"/> Select All
+         </label>
+      </li>
       <li ng-repeat="item in data" style="background-color: #{{item.code}}">
          <label>
-            <input type="checkbox" ng-model="isSelected" />
+            <input groupbox-item="change" type="checkbox" ng-model="isSelected"/>
             #{{item.code}}
          </label>
+      </li>
+   </ul>
+</div>
+
+<h4>Selection</h4>
+<div style="height:300px; width: 100%; overflow-y: auto;">
+   <ul style="list-style: none;margin:0;padding:0;">
+      <li ng-repeat="item in selection" style="background-color: #{{item.code}}">
+         #{{item.code}}
       </li>
    </ul>
 </div>
@@ -26,8 +41,9 @@
    var app = angular.module('app', ['groupbox']);
    app.controller('groupboxTest', ['$scope', function ($scope) {
       $scope.data = [];
+      $scope.selection = [];
 
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 30; i++) {
          var code = Math.floor(Math.random() * 16777215);
          $scope.data[i] = {
             isSelected: false,
