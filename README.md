@@ -17,14 +17,14 @@ anuglar.module('some-module-name', ['groupbox',...])
 * **groupbox** directive should be put to the root grouping element, argument is array of checkable items
 * **groupbox-model** directive should be put to the root grouping element near **groupbox** directive, argument is checkable property of array element
 * **groupbox-selection** directive can be put to the root grouping element near **groupbox** directive, argument is assignable property name for selected items
-* **groupbox-selection-key** directive can be put to the root grouping element near **groupbox-selection** directive, argument is key name for selected items
+* **groupbox-selection-key** directive can be put to the root grouping element near **groupbox-selection** directive, argument is key name for building selection
 * **groupbox-all** directive should be put to the master(select all) input, usually check box
 * **groupbox-item** directive should be put to the child inputs that will be controlled by master, usually check box
 ```html
    <ul groupbox="items"
        groupbox-model="isSelected"
-       groupbox-selection="selection"
-       groupbox-selection-key="code">
+       groupbox-selection="selectedItem"
+       groupbox-selection-key="itemKey">
       <li>
          <label>
             <input groupbox-all type="checkbox" ng-model="selectAll" /> Select All
