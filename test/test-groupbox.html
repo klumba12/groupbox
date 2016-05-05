@@ -16,7 +16,7 @@
    <ul groupbox="data" groupbox-selection="selection" style="list-style: none;margin:0;padding:0;">
       <li style="margin-bottom: 5px;">
          <label>
-            <input groupbox-all="change" type="checkbox"/> Select All
+            <input groupbox-all="change" type="checkbox" ng-model="selectAll"/> Select All
          </label>
       </li>
       <li ng-repeat="item in data" style="background-color: #{{item.code}}">
