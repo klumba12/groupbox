@@ -13,18 +13,19 @@
 
 <h4>Data</h4>
 <div style="height:250px; width: 100%; overflow-y: auto;">
-   <ul groupbox="data"
-       groupbox-selection="selection"
-       ng-model="code"
+   <ul groupbox="model.data"
+       groupbox-model="isSelected"
+       groupbox-selection="state.selection"
+       groupbox-selection-key="code"
        style="list-style: none;margin:0;padding:0;">
       <li style="margin-bottom: 5px;">
          <label>
-            <input groupbox-all type="checkbox" ng-model="selectAll"/> Select All
+            <input groupbox-all type="checkbox" ng-model="state.selectAll" /> Select All
          </label>
       </li>
-      <li ng-repeat="item in data" style="background-color: #{{item.code}}">
+      <li ng-repeat="item in model.data" style="background-color: #{{item.code}}">
          <label>
-            <input groupbox-item type="checkbox" ng-model="isSelected"/>
+            <input groupbox-item type="checkbox" ng-model="item.isSelected"/>
             #{{item.code}}
          </label>
       </li>
@@ -34,7 +35,7 @@
 <h4>Selection</h4>
 <div style="height:250px; width: 100%; overflow-y: auto;">
    <ul style="list-style: none;margin:0;padding:0;">
-      <li ng-repeat="item in selection" style="background-color: #{{item.code}}">
+      <li ng-repeat="item in state.selection" style="background-color: #{{item.code}}">
          {{item}}
       </li>
    </ul>
@@ -43,12 +44,12 @@
 <script language="javascript">
    var app = angular.module('app', ['groupbox']);
    app.controller('groupboxTest', ['$scope', function ($scope) {
-      $scope.data = [];
-      $scope.selection = [];
+      $scope.model = {data: []};
+      $scope.state = {selection: [], selectAll: false};
 
       for (var i = 0; i < 30; i++) {
          var code = Math.floor(Math.random() * 16777215);
-         $scope.data[i] = {
+         $scope.model.data[i] = {
             isSelected: false,
             code: code.toString(16),
          };

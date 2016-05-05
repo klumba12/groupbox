@@ -1,12 +1,17 @@
 (function (angular) {
    'use strict';
 
+   groupboxModelDirective.$inject = ['$parse'];
+   groupboxAllDirective.$inject = ['$parse'];
+   groupboxSelectionDirective.$inject = ['$parse'];
+
+
    angular.module('groupbox', [])
        .directive('groupbox', groupboxDirective)
+       .directive('groupboxModel', groupboxModelDirective)
        .directive('groupboxAll', groupboxAllDirective)
        .directive('groupboxItem', groupboxItemDirective)
        .directive('groupboxSelection', groupboxSelectionDirective);
-
 
    var Event = function () {
       var events = [];
@@ -30,24 +35,28 @@
    };
 
    function groupboxCtrl() {
-      var model = 'isSelected';
+      var self = this;
 
       this.data = [];
       this.changeEvent = new Event();
       this.toggleAllEvent = new Event();
 
-      this.invalidate = function (prop) {
-         model = prop;
-         this.changeEvent.emit(model);
+      this.assign = angular.noop;
+      this.test = function () {
+         return false;
+      };
+
+      this.invalidate = function () {
+         self.changeEvent.emit();
       };
 
       this.toggleAll = function (value) {
-         var data = this.data;
+         var data = self.data;
          for (var i = 0, length = data.length; i < length; i++) {
-            data[i][model] = value;
+            self.assign(data[i], value);
          }
 
-         this.toggleAllEvent.emit(value);
+         self.toggleAllEvent.emit(value);
       };
    };
 
@@ -57,30 +66,60 @@
          controller: groupboxCtrl,
          require: 'groupbox',
          link: function (scope, element, attrs, ctrl) {
+            var groupbox = ctrl;
+
             scope.$watch(attrs.groupbox, function (value) {
-               ctrl.data = value || [];
+               groupbox.data = value || [];
             });
 
             scope.$on('$destroy', function () {
-               ctrl.data = [];
+               groupbox.data = [];
             });
          }
       };
    }
 
-   function groupboxAllDirective() {
+   function groupboxModelDirective($parse) {
+      return {
+         restrict: 'A',
+         require: 'groupbox',
+         link: function (scope, element, attrs, ctrl) {
+            var groupbox = ctrl;
+
+            attrs.$observe('groupboxModel', function (value) {
+               if (value) {
+                  var getter = $parse(value);
+                  groupbox.test = getter;
+                  groupbox.assign = getter.assign;
+               }
+               else {
+                  groupbox.assign = angular.noop;
+                  groupbox.test = function () {
+                     return false;
+                  };
+               }
+            });
+         }
+      };
+   }
+
+   function groupboxAllDirective($parse) {
       return {
          restrict: 'A',
          require: ['^groupbox', 'ngModel'],
          link: function (scope, element, attrs, ctrls) {
-            var groupbox = ctrls[0];
+            var groupbox = ctrls[0],
+                getState = $parse(attrs.ngModel),
+                setState = getState.assign,
+                freeze = false;
 
-            groupbox.changeEvent.on(function (model) {
+            groupbox.changeEvent.on(function () {
                var state = null,
-                   data = groupbox.data;
+                   data = groupbox.data,
+                   test = groupbox.test;
 
                for (var i = 0, length = data.length; i < length; i++) {
-                  var mState = data[i][model];
+                  var mState = test(data[i]);
                   if (state !== mState) {
                      if (state === null) {
                         state = mState;
@@ -92,11 +131,22 @@
                   }
                }
 
-               scope[attrs.ngModel] = state;
+               if (getState(scope) !== state) {
+                  freeze = true;
+                  setState(scope, state);
+                  element.prop('indeterminate', state === null);
+               }
             });
 
-            scope.$watch(attrs.ngModel, function(value){
-               groupbox.toggleAll(value);
+            scope.$watch(attrs.ngModel, function (newValue, oldValue) {
+               if (freeze) {
+                  freeze = false;
+                  return;
+               }
+
+               if (newValue !== oldValue) {
+                  groupbox.toggleAll(newValue);
+               }
             });
          }
       };
@@ -105,53 +155,49 @@
    function groupboxItemDirective() {
       return {
          restrict: 'A',
-         require: ['^groupbox', 'ngModel'],
-         link: function (scope, element, attrs, ctrls) {
-            var groupbox = ctrls[0];
+         require: '^groupbox',
+         link: function (scope, element, attrs, ctrl) {
+            var groupbox = ctrl;
 
-            scope.$watch(attrs.ngModel, function () {
-               groupbox.invalidate(attrs.ngModel);
+            scope.$watch(attrs.ngModel, function (newValue, oldValue) {
+               if (newValue !== oldValue) {
+                  groupbox.invalidate();
+               }
             });
          }
       };
    }
 
-   function groupboxSelectionDirective() {
+   function groupboxSelectionDirective($parse) {
       return {
          restrict: 'A',
-         require: ['groupbox', '?ngModel'],
-         link: function (scope, element, attrs, ctrls) {
-            var groupbox = ctrls[0];
-
-            var selectorFactory = function () {
-               var model = attrs.ngModel;
-               if (model) {
-                  return function (item) {
-                     return item[model];
-                  };
-               }
-
-               return angular.identity;
-            };
+         require: 'groupbox',
+         link: function (scope, element, attrs, ctrl) {
+            var groupbox = ctrl,
+                key = attrs.groupboxSelectionKey,
+                selection = attrs.groupboxSelection,
+                keySelector = key ? $parse(key) : angular.identity,
+                setSelection = $parse(selection).assign;
 
             groupbox.changeEvent.on(function (model) {
                var data = groupbox.data,
                    selection = [],
-                   select = selectorFactory();
+                   test = ctrl.test;
 
                for (var i = 0, length = data.length; i < length; i++) {
                   var item = data[i];
-                  if (item[model]) {
-                     selection.push(select(item));
+                  if (test(item)) {
+                     selection.push(keySelector(item));
                   }
                }
 
-               scope[attrs.groupboxSelection] = selection;
+               setSelection(scope, selection);
             });
 
             groupbox.toggleAllEvent.on(function (value) {
-               var select = selectorFactory();
-               scope[attrs.groupboxSelection] = value ? groupbox.data.map(select) : [];
+               setSelection(scope, value ? groupbox.data.map(function (item) {
+                  return keySelector(item);
+               }) : []);
             });
          }
       };
