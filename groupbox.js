@@ -70,6 +70,7 @@
 
             scope.$watch(attrs.groupbox, function (value) {
                groupbox.data = value || [];
+               groupbox.invalidate();
             });
 
             scope.$on('$destroy', function () {
@@ -113,7 +114,7 @@
                 setState = getState.assign,
                 freeze = false;
 
-            groupbox.changeEvent.on(function () {
+            var invalidate = function(){
                var state = null,
                    data = groupbox.data,
                    test = groupbox.test;
@@ -136,7 +137,9 @@
                   setState(scope, state);
                   element.prop('indeterminate', state === null);
                }
-            });
+            };
+
+            groupbox.changeEvent.on(invalidate);
 
             scope.$watch(attrs.ngModel, function (newValue, oldValue) {
                if (freeze) {
