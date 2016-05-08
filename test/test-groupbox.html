@@ -20,7 +20,7 @@
        style="list-style: none;margin:0;padding:0;">
       <li style="margin-bottom: 5px;">
          <label>
-            <input groupbox-all type="checkbox" ng-model="state.selectAll" /> Select All
+            <input groupbox-all="state.isIndeterminate" type="checkbox" ng-model="state.selectAll" /> Select All
          </label>
       </li>
       <li ng-repeat="item in model.data" style="background-color: #{{item.code}}">
@@ -31,6 +31,12 @@
       </li>
    </ul>
 </div>
+
+<h4>State</h4>
+<ul style="list-style: none;margin:0;padding:0;">
+   <li>select all: {{state.selectAll}}</li>
+   <li>is indeterminate: {{state.isIndeterminate}}</li>
+</ul>
 
 <h4>Selection</h4>
 <div style="height:250px; width: 100%; overflow-y: auto;">
@@ -45,12 +51,16 @@
    var app = angular.module('app', ['groupbox']);
    app.controller('groupboxTest', ['$scope', function ($scope) {
       $scope.model = {data: []};
-      $scope.state = {selection: [], selectAll: false};
+      $scope.state = {
+         selection: [],
+         isIndeterminate: false,
+         selectAll: false
+      };
 
       for (var i = 0; i < 30; i++) {
          var code = Math.floor(Math.random() * 16777215);
          $scope.model.data[i] = {
-            isSelected: false,
+            isSelected: true,
             code: code.toString(16),
          };
       }

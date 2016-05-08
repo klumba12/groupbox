@@ -112,9 +112,10 @@
             var groupbox = ctrls[0],
                 getState = $parse(attrs.ngModel),
                 setState = getState.assign,
+                setIndeterminate = attrs.groupboxAll ? $parse(attrs.groupboxAll).assign : angular.noop,
                 freeze = false;
 
-            var invalidate = function(){
+            var invalidate = function () {
                var state = null,
                    data = groupbox.data,
                    test = groupbox.test;
@@ -135,7 +136,9 @@
                if (getState(scope) !== state) {
                   freeze = true;
                   setState(scope, state);
-                  element.prop('indeterminate', state === null);
+                  var isIndeterminate = state === null;
+                  element.prop('indeterminate', isIndeterminate);
+                  setIndeterminate(scope, isIndeterminate);
                }
             };
 
