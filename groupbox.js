@@ -136,10 +136,11 @@
                if (getState(scope) !== state) {
                   freeze = true;
                   setState(scope, state);
-                  var isIndeterminate = state === null;
-                  element.prop('indeterminate', isIndeterminate);
-                  setIndeterminate(scope, isIndeterminate);
                }
+
+               var isIndeterminate = state === null;
+               element.prop('indeterminate', isIndeterminate);
+               setIndeterminate(scope, isIndeterminate);
             };
 
             groupbox.changeEvent.on(invalidate);
