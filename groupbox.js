@@ -58,7 +58,7 @@
 
          self.toggleAllEvent.emit(value);
       };
-   };
+   }
 
    function groupboxDirective() {
       return {
@@ -186,26 +186,36 @@
                 keySelector = key ? $parse(key) : angular.identity,
                 setSelection = $parse(selection).assign;
 
-            groupbox.changeEvent.on(function (model) {
+            var updateSelection = function () {
                var data = groupbox.data,
                    selection = [],
                    test = ctrl.test;
 
-               for (var i = 0, length = data.length; i < length; i++) {
-                  var item = data[i];
-                  if (test(item)) {
-                     selection.push(keySelector(item));
+               if (angular.isArray(data)) {
+                  for (var i = 0, length = data.length; i < length; i++) {
+                     var item = data[i];
+                     if (test(item)) {
+                        selection.push(keySelector(item));
+                     }
                   }
+
+                  setSelection(scope, selection);
                }
+               else {
+                  setSelection(scope, []);
+               }
+            };
 
-               setSelection(scope, selection);
-            });
-
-            groupbox.toggleAllEvent.on(function (value) {
+            var toggleAll = function (value) {
                setSelection(scope, value ? groupbox.data.map(function (item) {
                   return keySelector(item);
                }) : []);
-            });
+            };
+
+            groupbox.changeEvent.on(updateSelection);
+            groupbox.toggleAllEvent.on(toggleAll);
+
+            $scope.$watch(groupbox.data, updateSelection);
          }
       };
    }
