@@ -214,8 +214,6 @@
 
             groupbox.changeEvent.on(updateSelection);
             groupbox.toggleAllEvent.on(toggleAll);
-
-            $scope.$watch(groupbox.data, updateSelection);
          }
       };
    }
