@@ -73,6 +73,7 @@
             case 'radio':
                toggleAll(false);
                $timeout(function () {
+                  self.changeEvent.emit();
                   self.state.invalidate = false;
                }, 0);
                return false;
