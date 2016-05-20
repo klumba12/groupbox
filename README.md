@@ -1,4 +1,4 @@
-#groupbox 1.0 + angularjs
+#groupbox 1.1 + angularjs
 Angular group box.
 
 groupbox can offer "select all" logic when working with checkable collections.

@@ -1,9 +1,11 @@
 (function (angular) {
    'use strict';
 
+   groupboxCtrl.$inject = ['$timeout'];
    groupboxModelDirective.$inject = ['$parse'];
    groupboxAllDirective.$inject = ['$parse'];
    groupboxSelectionDirective.$inject = ['$parse'];
+   groupboxItemDirective.$inject = ['$parse'];
 
 
    angular.module('groupbox', [])
@@ -34,12 +36,23 @@
       };
    };
 
-   function groupboxCtrl() {
+   function groupboxCtrl($timeout) {
       var self = this;
 
       this.data = [];
       this.changeEvent = new Event();
       this.toggleAllEvent = new Event();
+      this.mode = 'multi';
+      this.state = {
+         invalidate: false
+      };
+
+      var toggleAll = function (value) {
+         var data = self.data;
+         for (var i = 0, length = data.length; i < length; i++) {
+            self.assign(data[i], value);
+         }
+      };
 
       this.assign = angular.noop;
       this.test = function () {
@@ -47,15 +60,29 @@
       };
 
       this.invalidate = function () {
-         self.changeEvent.emit();
+         if (self.state.invalidate) {
+            return true;
+         }
+
+         self.state.invalidate = true;
+         switch (self.mode) {
+            case 'multi':
+               self.changeEvent.emit();
+               self.state.invalidate = false;
+               return true;
+            case 'radio':
+               toggleAll(false);
+               $timeout(function () {
+                  self.state.invalidate = false;
+               }, 0);
+               return false;
+            default:
+               throw Error('Invalid mode ' + self.mode);
+         }
       };
 
       this.toggleAll = function (value) {
-         var data = self.data;
-         for (var i = 0, length = data.length; i < length; i++) {
-            self.assign(data[i], value);
-         }
-
+         toggleAll(value);
          self.toggleAllEvent.emit(value);
       };
    }
@@ -67,6 +94,10 @@
          require: 'groupbox',
          link: function (scope, element, attrs, ctrl) {
             var groupbox = ctrl;
+
+            attrs.$observe('groupboxMode', function (value) {
+               groupbox.mode = value === 'radio' ? 'radio' : 'multi';
+            });
 
             scope.$watch(attrs.groupbox, function (value) {
                groupbox.data = value || [];
@@ -159,16 +190,19 @@
       };
    }
 
-   function groupboxItemDirective() {
+   function groupboxItemDirective($parse) {
       return {
          restrict: 'A',
          require: '^groupbox',
          link: function (scope, element, attrs, ctrl) {
-            var groupbox = ctrl;
+            var groupbox = ctrl,
+                assign = $parse(attrs.ngModel).assign;
 
-            scope.$watch(attrs.ngModel, function (newValue, oldValue) {
+            var off = scope.$watch(attrs.ngModel, function (newValue, oldValue) {
                if (newValue !== oldValue) {
-                  groupbox.invalidate();
+                  if (!groupbox.invalidate()) {
+                     assign(scope, newValue);
+                  }
                }
             });
          }
